@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artist Info</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Artist Info for {{ artist_name }}</h1>
+        {% if similar_artists %}
+            <h2>Similar Artists:</h2>
+            <ul>
+            {% for artist in similar_artists %}
+                <li>
+                    <a href="/artist/{{ artist.name }}/toptracks">{{ artist.name }}</a>
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No similar artists found.</p>
+        {% endif %}
+        <a href="/">Go Back</a>
+    </div>
+</body>
+</html>

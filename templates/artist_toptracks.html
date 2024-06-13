@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Tracks</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Top Tracks for {{ artist_name }}</h1>
+        {% if top_tracks %}
+            <ul>
+            {% for track in top_tracks %}
+                <li>
+                    <span>{{ track.name }}</span>
+                    {% if track.youtube_link %}
+                        - <a href="{{ track.youtube_link }}" target="_blank">Watch Fancam on YouTube</a>
+                    {% else %}
+                        - No YouTube Fancam found
+                    {% endif %}
+                </li>
+            {% endfor %}
+            </ul>
+        {% else %}
+            <p>No top tracks found.</p>
+        {% endif %}
+        <a href="/artist_info?artist_name={{ artist_name }}">Back to Artist Info</a>
+    </div>
+</body>
+</html>
