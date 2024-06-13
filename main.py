@@ -10,7 +10,7 @@ app = FastAPI()
 LAST_FM_API_KEY = '3165ed803092cb7d6e1087d1a389c45e'
 LAST_FM_API_URL = 'http://ws.audioscrobbler.com/2.0/'
 
-YOUTUBE_API_KEY = 'YOUR_YOUTUBE_API_KEY'
+YOUTUBE_API_KEY = 'AIzaSyBoA4GTZUNWomcyC5WjMwCdV0V9GJjx0Wo'
 YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 templates = Jinja2Templates(directory="templates")
