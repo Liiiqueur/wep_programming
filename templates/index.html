@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Home Page</title>
+    <title>DRUG</title>
     <style>
         body {
             background-color: #f8f9fa;
@@ -45,16 +45,16 @@
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to the Music Information Service</h1>
+        <h1>Welcome to 음악 추천 서비스!</h1>
         <div class="search-container">
             <form action="/artist_info" method="get">
-                <label for="artist_name" class="sr-only">Search for an Artist:</label>
+                <label for="artist_name" class="sr-only">유사 아티스트 찾기:</label>
                 <input type="text" id="artist_name" name="artist_name" placeholder="Enter artist name">
                 <button type="submit">Search</button>
             </form>
         </div>
         <div class="recent-searches">
-            <h2>Recent Searches</h2>
+            <h2>최근 검색어</h2>
             <ul>
                 {% for search in recent_searches %}
                 <li>{{ loop.index }}. {{ search.artist_name }} - {{ search.track_name if search.track_name else "N/A" }} ({{ search.timestamp }})</li>
