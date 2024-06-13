@@ -1,7 +1,10 @@
-from fastapi import FastAPI, HTTPException, Request, Query
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, HTTPException, Request, Query, Depends
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from sqlalchemy import create_engine, Column, String, Integer, DateTime, func, desc
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, Session
 import requests
 import logging
 import json
@@ -12,7 +15,7 @@ app = FastAPI()
 LAST_FM_API_KEY = '3165ed803092cb7d6e1087d1a389c45e'
 LAST_FM_API_URL = 'http://ws.audioscrobbler.com/2.0/'
 
-YOUTUBE_API_KEY = 'AIzaSyBoA4GTZUNWomcyC5WjMwCdV0V9GJjx0Wo'  # Replace with your YouTube API key
+YOUTUBE_API_KEY = 'AAIzaSyDvX4YOX1dBC9FHOhrlqLPi79o2j86x1TM'  # Replace with your YouTube API key
 YOUTUBE_API_URL = 'https://www.googleapis.com/youtube/v3/search'
 
 templates = Jinja2Templates(directory="templates")
@@ -21,19 +24,15 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 logging.basicConfig(level=logging.INFO)
 
-# 하드코딩된 링크 사전
 HARDCODED_LINKS = {
     ('NewJeans', 'Hype Boy'): 'https://www.youtube.com/watch?v=lmJPeFW75qQ',
-    ('NewJeans', 'Attention'): 'https://www.youtube.com/watch?v=abcd1234',  # Replace with actual link
-    ('NewJeans', 'Ditto'): 'https://www.youtube.com/watch?v=abcd5678',  # Replace with actual link
-    # Add more hardcoded links here
-    ('김건모', '잘못된 만남'): 'https://www.youtube.com/watch?v=abcd9012'  # Example link
+    ('NewJeans', 'Attention'): 'https://www.youtube.com/watch?v=abcd1234',
+    ('NewJeans', 'Ditto'): 'https://www.youtube.com/watch?v=abcd5678',
+    ('김건모', '잘못된 만남'): 'https://www.youtube.com/watch?v=abcd9012'
 }
 
-# 캐시 파일 경로
 CACHE_FILE = 'youtube_cache.json'
 
-# 캐시 초기화
 try:
     with open(CACHE_FILE, 'r') as f:
         cache = json.load(f)
@@ -45,12 +44,62 @@ def save_cache():
     with open(CACHE_FILE, 'w') as f:
         json.dump(cache, f)
 
+DATABASE_URL = "sqlite:///./test.db"
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
+
+class SearchHistory(Base):
+    __tablename__ = "search_history"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String, index=True)
+    artist_name = Column(String, index=True)
+    track_name = Column(String, index=True, nullable=True)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+
+class Artist(Base):
+    __tablename__ = "artists"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True)
+    info = Column(String)
+    similar_artists = Column(String)
+
+class Track(Base):
+    __tablename__ = "tracks"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True)
+    artist_name = Column(String, index=True)
+    playcount = Column(Integer)
+    release_date = Column(DateTime)
+    youtube_link = Column(String)
+
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def root(request: Request, db: Session = Depends(get_db)):
+    recent_searches = db.query(SearchHistory).order_by(desc(SearchHistory.timestamp)).limit(10).all()
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "recent_searches": recent_searches
+    })
 
 @app.get("/artist_info", response_class=HTMLResponse)
-async def artist_info(request: Request, artist_name: str):
+async def artist_info(request: Request, artist_name: str, db: Session = Depends(get_db)):
+    search_record = SearchHistory(
+        user_id=request.client.host,
+        artist_name=artist_name,
+        track_name=None
+    )
+    db.add(search_record)
+    db.commit()
+
     params = {
         'method': 'artist.getInfo',
         'artist': artist_name,
@@ -75,7 +124,15 @@ async def artist_info(request: Request, artist_name: str):
     })
 
 @app.get("/artist/{artist_name}/toptracks", response_class=HTMLResponse)
-async def artist_top_tracks(request: Request, artist_name: str, sort_by: str = Query("popular")):
+async def artist_top_tracks(request: Request, artist_name: str, sort_by: str = Query("popular"), db: Session = Depends(get_db)):
+    search_record = SearchHistory(
+        user_id=request.client.host,
+        artist_name=artist_name,
+        track_name=None
+    )
+    db.add(search_record)
+    db.commit()
+
     params = {
         'method': 'artist.getTopTracks',
         'artist': artist_name,
@@ -95,25 +152,20 @@ async def artist_top_tracks(request: Request, artist_name: str, sort_by: str = Q
         logging.error(f"No top tracks found for {artist_name}")
 
     if sort_by == "latest":
-        # 최신곡 순으로 정렬
         for track in top_tracks:
             track_info = get_track_info(artist_name, track['name'])
             track['release_date'] = track_info.get('release_date', '1900-01-01')
         sorted_tracks = sorted(top_tracks, key=lambda x: x['release_date'], reverse=True)
     else:
-        # 인기 순으로 정렬 (기본값)
         sorted_tracks = sorted(top_tracks, key=lambda x: int(x['playcount']), reverse=True)
 
-    # 상위 5개의 트랙에 대해서만 YouTube 링크를 추가
     top_5_tracks = sorted_tracks[:5]
     for track in top_5_tracks:
         youtube_link = await get_youtube_fancam_or_music_video_link(track['name'], artist_name)
         track['youtube_link'] = youtube_link
 
-    # 나머지 트랙은 기본 정보만 포함
     other_tracks = [track for track in sorted_tracks if track not in top_5_tracks]
 
-    # 트랙 정보 제공
     return templates.TemplateResponse("artist_toptracks.html", {
         "request": request,
         "artist_name": artist_name,
@@ -141,32 +193,27 @@ def get_track_info(artist_name: str, track_name: str):
     return track_info
 
 async def get_youtube_fancam_or_music_video_link(track_name: str, artist_name: str):
-    # 캐시 확인
     cache_key = f"{artist_name}_{track_name}"
     if cache_key in cache:
         logging.info(f"Using cached link for {track_name} by {artist_name}")
         return cache[cache_key]
 
-    # 하드코딩된 링크 확인
     if (artist_name, track_name) in HARDCODED_LINKS:
         logging.info(f"Using hardcoded link for {track_name} by {artist_name}")
         return HARDCODED_LINKS[(artist_name, track_name)]
     
-    # YouTube API를 통한 링크 검색
     query = f"{track_name} {artist_name} 직캠"
     youtube_link = await search_youtube(query)
     if youtube_link:
         cache[cache_key] = youtube_link
         return youtube_link
     
-    # 직캠 검색에 실패하면 일반 검색어로 다시 검색
     query = f"{track_name} {artist_name} 뮤직비디오"
     youtube_link = await search_youtube(query)
     if youtube_link:
         cache[cache_key] = youtube_link
         return youtube_link
 
-    # 두 번째 검색도 실패한 경우
     logging.error(f"No YouTube video found for {track_name} by {artist_name}")
     return None
 
@@ -200,3 +247,25 @@ async def search_youtube(query: str):
     
     logging.error(f"No YouTube video found for query: {query}")
     return None
+
+@app.get("/analytics/popular_artists", response_class=JSONResponse)
+async def popular_artists(request: Request, db: Session = Depends(get_db)):
+    result = db.query(SearchHistory.artist_name, func.count(SearchHistory.artist_name).label("count")) \
+               .group_by(SearchHistory.artist_name) \
+               .order_by(func.count(SearchHistory.artist_name).desc()) \
+               .limit(10) \
+               .all()
+    
+    popular_artists = [{"artist_name": row[0], "count": row[1]} for row in result]
+    return templates.TemplateResponse("popular_artists.html", {"request": request, "popular_artists": popular_artists})
+
+@app.get("/analytics/popular_tracks", response_class=JSONResponse)
+async def popular_tracks(request: Request, db: Session = Depends(get_db)):
+    result = db.query(SearchHistory.track_name, func.count(SearchHistory.track_name).label("count")) \
+               .group_by(SearchHistory.track_name) \
+               .order_by(func.count(SearchHistory.track_name).desc()) \
+               .limit(10) \
+               .all()
+    
+    popular_tracks = [{"track_name": row[0], "count": row[1]} for row in result]
+    return templates.TemplateResponse("popular_tracks.html", {"request": request, "popular_tracks": popular_tracks})
