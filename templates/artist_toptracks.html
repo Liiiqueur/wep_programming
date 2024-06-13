@@ -10,20 +10,29 @@
     <div class="container">
         <h1>Top Tracks for {{ artist_name }}</h1>
         {% if top_tracks %}
+            <h2>Top 5 Tracks</h2>
             <ul>
             {% for track in top_tracks %}
                 <li>
                     <span>{{ track.name }}</span>
                     {% if track.youtube_link %}
-                        - <a href="{{ track.youtube_link }}" target="_blank">Watch Fancam on YouTube</a>
+                        - <a href="{{ track.youtube_link }}" target="_blank">Watch on YouTube</a>
                     {% else %}
-                        - No YouTube Fancam found
+                        - No YouTube video found
                     {% endif %}
                 </li>
             {% endfor %}
             </ul>
+        {% endif %}
+        {% if other_tracks %}
+            <h2>Other Tracks</h2>
+            <ul>
+            {% for track in other_tracks %}
+                <li>{{ track.name }}</li>
+            {% endfor %}
+            </ul>
         {% else %}
-            <p>No top tracks found.</p>
+            <p>No other tracks found.</p>
         {% endif %}
         <a href="/artist_info?artist_name={{ artist_name }}">Back to Artist Info</a>
     </div>
