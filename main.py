@@ -101,10 +101,12 @@ def get_db():
 @app.get("/", response_class=HTMLResponse)
 async def root(request: Request, db: Session = Depends(get_db)):
     recent_searches = db.query(SearchHistory).order_by(desc(SearchHistory.timestamp)).limit(10).all()
+
     return templates.TemplateResponse("index.html", {
         "request": request,
         "recent_searches": recent_searches
     })
+
 
 # 아티스트 정보를 가져오는 엔드포인트
 @app.get("/artist_info", response_class=HTMLResponse)
@@ -298,3 +300,4 @@ async def popular_tracks(request: Request, db: Session = Depends(get_db)):
     
     popular_tracks = [{"track_name": row[0], "count": row[1]} for row in result]
     return templates.TemplateResponse("popular_tracks.html", {"request": request, "popular_tracks": popular_tracks})
+
