@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Tracks</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8"> <!-- 문서의 문자 인코딩을 UTF-8로 설정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형 웹 디자인을 위해 뷰포트 설정 -->
+    <title>Top Tracks</title> <!-- HTML 문서의 제목을 설정 -->
+    <link rel="stylesheet" href="/static/styles.css"> <!-- 외부 스타일시트를 링크 -->
 </head>
 <body>
     <div class="container">
-        <h1>Top Tracks for {{ artist_name }}</h1>
+        <h1>Top Tracks for {{ artist_name }}</h1> <!-- 아티스트 이름을 포함한 페이지 제목 -->
         {% if top_tracks %}
-            <h2>Top 5 Tracks</h2>
+            <h2>Top 5 Tracks</h2> <!-- 상위 5개 트랙 섹션 제목 -->
             <ul>
             {% for track in top_tracks %}
                 <li>
-                    <span>{{ track.name }}</span>
+                    <span>{{ track.name }}</span> <!-- 트랙 이름 표시 -->
                     {% if track.youtube_link %}
-                        - <a href="{{ track.youtube_link }}" target="_blank">Watch on YouTube</a>
+                        - <a href="{{ track.youtube_link }}" target="_blank">Watch on YouTube</a> <!-- YouTube 링크가 있으면 표시 -->
                     {% else %}
-                        - No YouTube video found
+                        - No YouTube video found <!-- YouTube 링크가 없으면 표시 -->
                     {% endif %}
                 </li>
             {% endfor %}
             </ul>
         {% endif %}
         {% if other_tracks %}
-            <h2>Other Tracks</h2>
+            <h2>Other Tracks</h2> <!-- 기타 트랙 섹션 제목 -->
             <ul>
             {% for track in other_tracks %}
-                <li>{{ track.name }}</li>
+                <li>{{ track.name }}</li> <!-- 기타 트랙 이름 표시 -->
             {% endfor %}
             </ul>
         {% else %}
-            <p>No other tracks found.</p>
+            <p>No other tracks found.</p> <!-- 기타 트랙이 없을 때 표시 -->
         {% endif %}
-        <a href="/artist_info?artist_name={{ artist_name }}">Back to Artist Info</a>
+        <a href="/artist_info?artist_name={{ artist_name }}">Back to Artist Info</a> <!-- 아티스트 정보 페이지로 돌아가는 링크 -->
     </div>
 </body>
 </html>

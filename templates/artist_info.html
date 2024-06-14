@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Artist Info</title>
-    <link rel="stylesheet" href="/static/styles.css">
+    <meta charset="UTF-8"> <!-- 문서의 문자 인코딩을 UTF-8로 설정 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형 웹 디자인을 위해 뷰포트 설정 -->
+    <title>Artist Info</title> <!-- HTML 문서의 제목을 설정 -->
+    <link rel="stylesheet" href="/static/styles.css"> <!-- 외부 스타일시트를 링크 -->
 </head>
 <body>
     <div class="container">
-        <h1>Artist Info for {{ artist_name }}</h1>
+        <h1>Artist Info for {{ artist_name }}</h1> <!-- 아티스트 이름을 포함한 페이지 제목 -->
         {% if similar_artists %}
-            <h2>Similar Artists:</h2>
+            <h2>Similar Artists:</h2> <!-- 유사한 아티스트 섹션 제목 -->
             <ul>
             {% for artist in similar_artists %}
                 <li>
-                    <a href="/artist/{{ artist.name }}/toptracks">{{ artist.name }}</a>
+                    <a href="/artist/{{ artist.name }}/toptracks">{{ artist.name }}</a> <!-- 각 유사한 아티스트의 상위 트랙 페이지로 링크 -->
                 </li>
             {% endfor %}
             </ul>
         {% else %}
-            <p>No similar artists found.</p>
+            <p>No similar artists found.</p> <!-- 유사한 아티스트가 없을 때 표시 -->
         {% endif %}
-        <a href="/">Go Back</a>
+        <a href="/">Go Back</a> <!-- 메인 페이지로 돌아가는 링크 -->
     </div>
 </body>
 </html>

@@ -1,63 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DRUG</title>
+    <title>DRUG</title> <!-- HTML 문서의 제목을 설정 -->
     <style>
         body {
-            background-color: #f8f9fa;
-            color: #343a40;
-            font-family: Arial, sans-serif;
+            background-color: #f8f9fa; /* 배경색을 연한 회색으로 설정 */
+            color: #343a40; /* 글자색을 진한 회색으로 설정 */
+            font-family: Arial, sans-serif; /* 글꼴을 Arial, sans-serif로 설정 */
         }
         h1 {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 2.5rem;
+            text-align: center; /* 제목을 가운데 정렬 */
+            margin-top: 20px; /* 위쪽 여백을 20px로 설정 */
+            font-size: 2.5rem; /* 글자 크기를 2.5rem로 설정 */
         }
         .search-container {
-            text-align: center;
-            margin: 30px 0;
+            text-align: center; /* 검색 컨테이너를 가운데 정렬 */
+            margin: 30px 0; /* 위아래 여백을 30px로 설정 */
         }
         .search-container input {
-            padding: 10px;
-            font-size: 1rem;
-            width: 300px;
-            margin-right: 10px;
+            padding: 10px; /* 안쪽 여백을 10px로 설정 */
+            font-size: 1rem; /* 글자 크기를 1rem로 설정 */
+            width: 300px; /* 입력 필드 너비를 300px로 설정 */
+            margin-right: 10px; /* 오른쪽 여백을 10px로 설정 */
         }
         .search-container button {
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
+            padding: 10px 20px; /* 안쪽 여백을 10px 20px로 설정 */
+            font-size: 1rem; /* 글자 크기를 1rem로 설정 */
+            cursor: pointer; /* 커서를 포인터로 설정 */
         }
         .recent-searches {
-            text-align: center;
-            margin: 20px auto;
-            font-size: 0.9rem;
-            color: #6c757d;
+            text-align: center; /* 최근 검색어를 가운데 정렬 */
+            margin: 20px auto; /* 위아래 여백을 20px로 설정 */
+            font-size: 0.9rem; /* 글자 크기를 0.9rem로 설정 */
+            color: #6c757d; /* 글자색을 회색으로 설정 */
         }
         .recent-searches ul {
-            list-style-type: none;
-            padding: 0;
+            list-style-type: none; /* 목록 스타일을 제거 */
+            padding: 0; /* 안쪽 여백을 0으로 설정 */
         }
         .recent-searches li {
-            margin: 5px 0;
+            margin: 5px 0; /* 위아래 여백을 5px로 설정 */
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Welcome to 음악 추천 서비스!</h1>
+        <h1>Welcome to 음악 추천 서비스!</h1> <!-- 제목을 설정 -->
         <div class="search-container">
-            <form action="/artist_info" method="get">
-                <label for="artist_name" class="sr-only">유사 아티스트 찾기:</label>
-                <input type="text" id="artist_name" name="artist_name" placeholder="Enter artist name">
-                <button type="submit">Search</button>
+            <form action="/artist_info" method="get"> <!-- 폼을 생성하고, 제출 시 /artist_info로 GET 요청 -->
+                <label for="artist_name" class="sr-only">추천 아티스트 찾기:</label> <!-- 시각적으로 숨겨진 라벨 -->
+                <input type="text" id="artist_name" name="artist_name" placeholder="Enter artist name"> <!-- 아티스트 이름 입력 필드 -->
+                <button type="submit">Search</button> <!-- 제출 버튼 -->
             </form>
         </div>
         <div class="recent-searches">
-            <h2>최근 검색어</h2>
+            <h2>최근 검색어</h2> <!-- 최근 검색어 섹션 제목 -->
             <ul>
-                {% for search in recent_searches %}
-                <li>{{ loop.index }}. {{ search.artist_name }} - {{ search.track_name if search.track_name else "N/A" }} ({{ search.timestamp }})</li>
+                {% for search in recent_searches %} <!-- 최근 검색어를 반복문으로 출력 -->
+                <li>{{ loop.index }}. {{ search.artist_name }} - {{ search.track_name if search.track_name else "N/A" }} ({{ search.timestamp }})</li> <!-- 각 검색어 항목 -->
                 {% endfor %}
             </ul>
         </div>
